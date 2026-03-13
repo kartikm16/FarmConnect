@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketplace - FarmConnect</title>
+    <meta name="description" content="Browse all fresh, organic produce on FarmConnect. Search, filter by category, and add items to cart.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="marketplace.css">
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="container nav-container">
+            <a href="/" class="logo">
+                <i class="ri-leaf-fill"></i> Farm<span>Connect</span>
+            </a>
+            
+            <ul class="nav-links" id="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/marketplace" class="active">Marketplace</a></li>
+                <li><a href="/#farmers">Farmers</a></li>
+                <li><a href="/#about">About</a></li>
+                <li><a href="/#contact">Contact</a></li>
+            </ul>
+
+            <div class="nav-actions">
+                <button class="cart-btn" aria-label="Cart">
+                    <i class="ri-shopping-cart-2-line"></i>
+                    <span class="cart-counter" id="cart-count">0</span>
+                </button>
+                <button class="mobile-toggle" id="mobile-toggle" aria-label="Toggle menu">
+                    <i class="ri-menu-line"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Hero -->
+    <section class="mp-hero">
+        <div class="container">
+            <div class="mp-hero-content">
+                <span class="badge">All Products</span>
+                <h1>Fresh <span class="highlight">Marketplace</span></h1>
+                <p>Search and discover seasonal produce straight from local farms across India.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Marketplace Controls -->
+    <section class="mp-controls-bar">
+        <div class="container">
+            <div class="mp-search-wrap">
+                <i class="ri-search-line search-icon"></i>
+                <input type="text" id="mp-search" placeholder="Search for tomatoes, mangoes, wheat..." autocomplete="off">
+                <button class="clear-search-btn" id="clear-search" aria-label="Clear search" title="Clear">
+                    <i class="ri-close-circle-fill"></i>
+                </button>
+            </div>
+
+            <div class="mp-sort-wrap">
+                <label for="mp-sort"><i class="ri-layout-grid-line"></i> Sort by:</label>
+                <select id="mp-sort">
+                    <option value="default">Default</option>
+                    <option value="price-asc">Price: Low → High</option>
+                    <option value="price-desc">Price: High → Low</option>
+                    <option value="name-asc">Name: A → Z</option>
+                    <option value="rating-desc">Top Rated</option>
+                </select>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sidebar + Products -->
+    <main class="mp-main">
+        <div class="container mp-layout">
+
+            <!-- Sidebar Filters -->
+            <aside class="mp-sidebar">
+                <div class="sidebar-header">
+                    <h3><i class="ri-equalizer-line"></i> Filters</h3>
+                    <button id="reset-filters" class="reset-btn">Reset All</button>
+                </div>
+
+                <!-- Category Filter -->
+                <div class="filter-group">
+                    <h4>Category</h4>
+                    <div class="filter-options" id="category-filters">
+                        <label class="filter-option">
+                            <input type="radio" name="category" value="all" checked>
+                            <span>All Produce</span>
+                        </label>
+                        <label class="filter-option">
+                            <input type="radio" name="category" value="vegetables">
+                            <span>Vegetables</span>
+                        </label>
+                        <label class="filter-option">
+                            <input type="radio" name="category" value="fruits">
+                            <span>Fruits</span>
+                        </label>
+                        <label class="filter-option">
+                            <input type="radio" name="category" value="grains">
+                            <span>Grains & Pulses</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Organic Filter -->
+                <div class="filter-group">
+                    <h4>Quality</h4>
+                    <div class="filter-options">
+                        <label class="filter-option-toggle">
+                            <input type="checkbox" id="organic-filter">
+                            <span class="toggle-track">
+                                <span class="toggle-thumb"></span>
+                            </span>
+                            <span class="toggle-label">Organic Only</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Price Range Filter -->
+                <div class="filter-group">
+                    <h4>Max Price</h4>
+                    <div class="price-range-wrap">
+                        <input type="range" id="price-range" min="0" max="200" value="200" step="5">
+                        <div class="price-labels">
+                            <span>₹0</span>
+                            <span id="price-range-value">₹200</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Filters Display -->
+                <div class="active-filters" id="active-filters"></div>
+            </aside>
+
+            <!-- Products Content -->
+            <div class="mp-content">
+                <div class="mp-results-bar">
+                    <p id="results-count" class="results-count"></p>
+                    <div class="view-toggle">
+                        <button class="view-btn active" data-view="grid" aria-label="Grid view"><i class="ri-layout-grid-line"></i></button>
+                        <button class="view-btn" data-view="list" aria-label="List view"><i class="ri-list-check"></i></button>
+                    </div>
+                </div>
+
+                <div class="mp-products-grid" id="mp-products-grid">
+                    <!-- Injected by JS -->
+                </div>
+
+                <div class="mp-no-results hidden" id="mp-no-results">
+                    <i class="ri-plant-line"></i>
+                    <h3>No produce found</h3>
+                    <p>Try adjusting your search or filters.</p>
+                    <button class="btn btn-primary" id="no-results-reset">Clear All Filters</button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Cart Sidebar -->
+    <div class="cart-overlay" id="cart-overlay"></div>
+    <div class="cart-sidebar" id="cart-sidebar">
+        <div class="cart-header">
+            <h2>Your Cart</h2>
+            <button class="close-cart" id="close-cart" aria-label="Close cart">
+                <i class="ri-close-line"></i>
+            </button>
+        </div>
+        <div class="cart-items" id="cart-items">
+            <!-- Items injected via JS -->
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total:</span>
+                <span id="cart-total-price">₹0.00</span>
+            </div>
+            <button class="btn btn-primary btn-full checkout-btn">Proceed to Checkout</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col brand-col">
+                    <a href="/" class="logo footer-logo">
+                        <i class="ri-leaf-fill"></i> Farm<span>Connect</span>
+                    </a>
+                    <p>Strengthening communities by connecting local farmers directly with urban dinner tables.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/marketplace">Marketplace</a></li>
+                        <li><a href="/#farmers">Our Farmers</a></li>
+                        <li><a href="/#about">About Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Shipping Policy</a></li>
+                        <li><a href="#">Return Policy</a></li>
+                        <li><a href="/#contact">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Newsletter</h4>
+                    <p>Subscribe for seasonal updates and exclusive discounts.</p>
+                    <form class="newsletter-form">
+                        <input type="email" placeholder="Your email address" required>
+                        <button type="submit"><i class="ri-arrow-right-line"></i></button>
+                    </form>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 FarmConnect. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="marketplace-script.js"></script>
+</body>
+</html>

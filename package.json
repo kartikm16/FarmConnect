@@ -1,0 +1,17 @@
+{
+  "name": "farmconnect-app",
+  "version": "1.0.0",
+  "description": "A digital marketplace connecting small-scale farmers directly with urban consumers for fresh, organic produce.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
