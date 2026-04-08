@@ -252,22 +252,22 @@
                 <div class="testimonial-grid">
                     <div class="testimonial-card">
                         <div class="quote-icon"><i class="ri-double-quotes-l"></i></div>
-                        <p>"The quality of vegetables I get from FarmConnect is unmatched by any supermarket. Plus, I love knowing I'm supporting local families."</p>
+                        <p>"I appreciate their commitment to sustainable farming. The guidance and products provided by the company have helped us adopt better agricultural practices."</p>
                         <div class="author">
                             <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150" alt="Sarah J.">
                             <div>
-                                <h4>Sarah Jenkins</h4>
+                                <h4>Kshitij Kolhi</h4>
                                 <span>Urban Consumer</span>
                             </div>
                         </div>
                     </div>
                     <div class="testimonial-card farmer-testimonial">
                         <div class="quote-icon"><i class="ri-double-quotes-l"></i></div>
-                        <p>"Before FarmConnect, I lost 30% of my harvest to middlemen transport delays. Now, I harvest strictly to order and my profits are up 40%."</p>
+                        <p>"Excellent service and timely delivery. Their fertilizers and agri-solutions are of top quality. I would definitely recommend them to other farmers."</p>
                         <div class="author">
                             <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150" alt="Marcus T.">
                             <div>
-                                <h4>Marcus Thorne</h4>
+                                <h4>Jijo George</h4>
                                 <span>Organic Vegetable Farmer</span>
                             </div>
                         </div>
@@ -288,7 +288,9 @@
                             <div class="icon"><i class="ri-map-pin-line"></i></div>
                             <div>
                                 <h4>Headquarters</h4>
-                                <p>Alibaug farms,<br>123 Eco Way, Portland, OR 97204</p>
+                                <p>Alibaug farms,<br>GreenFields Agro Pvt. Ltd.
+Plot No. 27, <br>Village Pimpalgaon Baswant
+Taluka Niphad, District Nashik</p>
                             </div>
                         </div>
                         <div class="info-item">
@@ -302,7 +304,7 @@
                             <div class="icon"><i class="ri-phone-line"></i></div>
                             <div>
                                 <h4>Call Us</h4>
-                                <p>+1 (555) 123-4567<br>Mon-Sat, 8am-6pm</p>
+                                <p>+91 9876543210<br>Mon-Sat, 8am-6pm</p>
                             </div>
                         </div>
                     </div>
@@ -319,12 +321,12 @@
                         <h3>Send a Message</h3>
                         <div class="form-group">
                             <label for="name">Full Name</label>
-                            <input type="text" id="name" name="name" placeholder="Om Hude">
+                            <input type="text" id="name" name="name" placeholder="Eg. Om Hude">
                             <span class="error-msg" id="name-error">Please enter your name.</span>
                         </div>
                         <div class="form-group">
                             <label for="email">Email Address</label>
-                            <input type="email" id="email" name="email" placeholder="hude@om.com">
+                            <input type="email" id="email" name="email" placeholder="Eg. hudeom@gmail.com">
                             <span class="error-msg" id="email-error">Please enter a valid email address.</span>
                         </div>
                         <div class="form-group">
@@ -432,6 +434,70 @@
         </div>
         <div class="cart-items" id="orders-list-history" style="padding: 1.5rem;">
             <!-- History injected via JS -->
+        </div>
+    </div>
+
+    <!-- Farmer Profile Modal -->
+    <div class="cart-overlay" id="farmer-modal-overlay"></div>
+    <div class="profile-modal" id="farmer-profile-modal">
+        <button class="close-profile" id="close-farmer-modal"><i class="ri-close-line"></i></button>
+        
+        <div class="profile-header">
+            <div class="profile-cover" id="f-modal-cover"></div>
+            <div class="profile-avatar-wrap">
+                <img src="" alt="Farmer" id="f-modal-avatar" class="profile-avatar">
+            </div>
+        </div>
+
+        <div class="profile-content">
+            <div class="profile-main-info">
+                <h2 id="f-modal-name">Farmer Name</h2>
+                <p class="f-modal-farm" id="f-modal-farm-name"><i class="ri-store-2-line"></i> Green Valley Farm</p>
+                <div class="f-modal-meta">
+                    <span id="f-modal-location"><i class="ri-map-pin-line"></i> location</span>
+                    <span id="f-modal-exp"><i class="ri-calendar-line"></i> 5+ Years Exp.</span>
+                </div>
+                <div class="f-modal-rating">
+                    <div class="stars" id="f-modal-stars-display"></div>
+                    <span id="f-modal-rating-text">(4.5/5)</span>
+                </div>
+            </div>
+
+            <div class="profile-details-grid">
+                <div class="detail-item">
+                    <h4>Specialty</h4>
+                    <p id="f-modal-produce">Organic Vegetables</p>
+                </div>
+                <div class="detail-item">
+                    <h4>Farming Method</h4>
+                    <p id="f-modal-method">Natural Farming</p>
+                </div>
+            </div>
+
+            <div class="profile-section">
+                <h3>About the Farm</h3>
+                <p id="f-modal-desc">Description of the farm goes here...</p>
+            </div>
+
+            <div class="profile-section">
+                <h3>Rate this Farmer</h3>
+                <div class="rating-selector" id="rating-selector">
+                    <input type="radio" name="star-rating" id="star-5" value="5"><label for="star-5"><i class="ri-star-fill"></i></label>
+                    <input type="radio" name="star-rating" id="star-4" value="4"><label for="star-4"><i class="ri-star-fill"></i></label>
+                    <input type="radio" name="star-rating" id="star-3" value="3"><label for="star-3"><i class="ri-star-fill"></i></label>
+                    <input type="radio" name="star-rating" id="star-2" value="2"><label for="star-2"><i class="ri-star-fill"></i></label>
+                    <input type="radio" name="star-rating" id="star-1" value="1"><label for="star-1"><i class="ri-star-fill"></i></label>
+                </div>
+                <textarea id="rating-feedback" placeholder="Share your experience with this farmer..."></textarea>
+                <button class="btn btn-primary btn-full" id="submit-rating-btn">Submit Rating</button>
+            </div>
+
+            <div class="profile-section">
+                <h3>Customer Reviews</h3>
+                <div class="reviews-list" id="f-modal-reviews">
+                    <!-- Reviews injected here -->
+                </div>
+            </div>
         </div>
     </div>
 

@@ -354,7 +354,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="farmer-tags">
                         ${tagsHtml}
                     </div>
-                    <a href="#" class="btn btn-outline" style="padding: 0.5rem 1rem; border-width: 1px;">View Farm</a>
+                    <button onclick="openFarmerProfile('${farmer.id}')" class="btn btn-outline" style="padding: 0.5rem 1rem; border-width: 1px;">View Farm</button>
                 </div>
             `;
             farmersGrid.innerHTML += farmerCard;
@@ -544,7 +544,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <strong>Total: ₹${order.totalAmount}</strong>
                     <div style="margin-top: 10px;">
                         ${order.farmerIds ? order.farmerIds.map(fId => `
-                            <button onclick="reviewFarmer('${fId}')" class="btn btn-outline" style="font-size: 0.7rem; padding: 4px 8px;">Rate Farmer</button>
+                            <button onclick="openFarmerProfile('${fId}')" class="btn btn-outline" style="font-size: 0.7rem; padding: 4px 8px;">Rate Farmer</button>
                         `).join(' ') : ''}
                     </div>
                 </div>
@@ -554,20 +554,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    window.reviewFarmer = async (fId) => {
-        const rating = prompt("Rate this farmer (1-5):", "5");
-        const feedback = prompt("Leave a short feedback:");
-        if (rating && feedback) {
-            try {
-                const res = await fetch(`/api/farmer/${fId}/review`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ rating: parseInt(rating), feedback })
-                });
-                if (res.ok) alert("Review sent! Thank you.");
-            } catch (err) { alert("Review failed."); }
-        }
-    };
+    // Removed redundant reviewFarmer in favor of openFarmerProfile
     
     function openCartSidebar() {
         if (cartSidebar && cartOverlay) {
@@ -732,5 +719,124 @@ document.addEventListener('DOMContentLoaded', () => {
     try { initCartSidebar(); } catch(e) { console.error("initCartSidebar error", e); }
     try { fetchProducts(); } catch(e) { console.error("fetchProducts error", e); }
     try { fetchFarmers(); } catch(e) { console.error("fetchFarmers error", e); }
+
+    // --- Farmer Profile Modal Logic ---
+    const farmerModal = document.getElementById('farmer-profile-modal');
+    const farmerOverlay = document.getElementById('farmer-modal-overlay');
+    const closeFarmerBtn = document.getElementById('close-farmer-modal');
+    const submitRatingBtn = document.getElementById('submit-rating-btn');
+    let activeFarmerId = null;
+
+    window.openFarmerProfile = async (farmerId) => {
+        // Close other sidebars if open
+        if (typeof closeOrdersSidebar === 'function') closeOrdersSidebar();
+        if (typeof closeCartSidebar === 'function') closeCartSidebar();
+        
+        activeFarmerId = farmerId;
+        try {
+            const res = await fetch(`/api/farmer/${farmerId}`);
+            if (!res.ok) throw new Error("Farmer not found");
+            const farmer = await res.json();
+
+            // Populate Modal
+            document.getElementById('f-modal-name').textContent = farmer.farmName || 'Local Farmer';
+            document.getElementById('f-modal-farm-name').innerHTML = `<i class="ri-store-2-line"></i> ${farmer.farmName || 'Farm'}`;
+            document.getElementById('f-modal-avatar').src = farmer.picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(farmer.farmName || 'F')}&background=random&size=150`;
+            document.getElementById('f-modal-cover').style.backgroundImage = `linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.4)), url('${farmer.cover || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3844?auto=format&fit=crop&q=80&w=800'}')`;
+            document.getElementById('f-modal-location').innerHTML = `<i class="ri-map-pin-line"></i> ${farmer.location || 'India'}`;
+            document.getElementById('f-modal-exp').innerHTML = `<i class="ri-calendar-line"></i> ${farmer.experience || '5+'} Years Exp.`;
+            document.getElementById('f-modal-produce').textContent = farmer.produceType || 'Organic Produce';
+            document.getElementById('f-modal-method').textContent = farmer.farmingMethod || 'Natural Farming';
+            document.getElementById('f-modal-desc').textContent = farmer.description || 'Dedicated to providing the freshest organic produce to the community.';
+            
+            // Rating Display
+            const rating = farmer.rating || 0;
+            const count = farmer.reviewsCount || 0;
+            document.getElementById('f-modal-stars-display').innerHTML = '⭐'.repeat(Math.round(rating)) || 'No ratings yet';
+            document.getElementById('f-modal-rating-text').textContent = `(${rating}/5 based on ${count} reviews)`;
+
+            // Reviews List
+            const reviewsContainer = document.getElementById('f-modal-reviews');
+            reviewsContainer.innerHTML = '';
+            if (farmer.reviews) {
+                Object.values(farmer.reviews).reverse().forEach(rev => {
+                    reviewsContainer.innerHTML += `
+                        <div class="review-item">
+                            <div class="review-header">
+                                <div style="display: flex; flex-direction: column;">
+                                    <span class="reviewer-name" style="font-weight: 700; font-size: 0.95rem; color: var(--text-main);">${rev.userName || 'Reviewer'}</span>
+                                    <div class="stars">${'⭐'.repeat(rev.rating)}</div>
+                                </div>
+                                <div class="review-date">${new Date(rev.date).toLocaleDateString()}</div>
+                            </div>
+                            <p class="review-text" style="margin-top: 0.5rem;">${rev.feedback}</p>
+                        </div>
+                    `;
+                });
+            } else {
+                reviewsContainer.innerHTML = '<p>No reviews yet. Be the first to rate!</p>';
+            }
+
+            // Show Modal
+            farmerModal.classList.add('active');
+            farmerOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        } catch (err) {
+            console.error(err);
+            alert("Could not load farmer profile.");
+        }
+    };
+
+    function closeFarmerProfile() {
+        farmerModal.classList.remove('active');
+        farmerOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+        // Reset form
+        document.getElementById('rating-feedback').value = '';
+        const checkedRating = document.querySelector('input[name="star-rating"]:checked');
+        if (checkedRating) checkedRating.checked = false;
+    }
+
+    if (closeFarmerBtn) closeFarmerBtn.addEventListener('click', closeFarmerProfile);
+    if (farmerOverlay) farmerOverlay.addEventListener('click', closeFarmerProfile);
+
+    if (submitRatingBtn) {
+        submitRatingBtn.addEventListener('click', async () => {
+            const ratingInput = document.querySelector('input[name="star-rating"]:checked');
+            const feedbackInput = document.getElementById('rating-feedback');
+
+            if (!ratingInput) {
+                alert("Please select a star rating.");
+                return;
+            }
+
+            const rating = ratingInput.value;
+            const feedback = feedbackInput.value;
+
+            try {
+                submitRatingBtn.disabled = true;
+                submitRatingBtn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Submitting...';
+
+                const res = await fetch(`/api/farmer/${activeFarmerId}/review`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ rating: parseInt(rating), feedback })
+                });
+
+                if (res.ok) {
+                    await openFarmerProfile(activeFarmerId); // Refresh profile
+                    alert("Thank you for your review!");
+                } else {
+                    alert("Failed to submit review.");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("An error occurred.");
+            } finally {
+                submitRatingBtn.disabled = false;
+                submitRatingBtn.innerHTML = 'Submit Rating';
+            }
+        });
+    }
 
 });

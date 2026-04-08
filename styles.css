@@ -1578,3 +1578,220 @@ button {
     font-weight: 700;
     margin-bottom: 1rem;
 }
+
+/* ==========================================================================
+   Farmer Profile Modal
+   ========================================================================== */
+.profile-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    width: 95%;
+    max-width: 600px;
+    max-height: 90vh;
+    background: var(--bg-card);
+    border-radius: var(--border-radius-lg);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    z-index: 9999;
+    overflow-y: auto;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.profile-modal.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.close-profile {
+    position: absolute;
+    top: 1.25rem;
+    right: 1.25rem;
+    z-index: 10;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    backdrop-filter: blur(4px);
+    transition: var(--transition);
+}
+
+.close-profile:hover {
+    background: var(--primary);
+    transform: rotate(90deg);
+}
+
+.profile-header {
+    position: relative;
+}
+
+.profile-cover {
+    height: 180px;
+    background-size: cover;
+    background-position: center;
+    background-image: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.4));
+}
+
+.profile-avatar-wrap {
+    position: absolute;
+    bottom: -40px;
+    left: 2rem;
+}
+
+.profile-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 4px solid white;
+    box-shadow: var(--shadow-md);
+    background: white;
+}
+
+.profile-content {
+    padding: 3rem 2rem 2rem;
+}
+
+.profile-main-info {
+    margin-bottom: 2rem;
+}
+
+.profile-main-info h2 {
+    font-size: 2rem;
+    margin-bottom: 0.25rem;
+}
+
+.f-modal-farm {
+    font-weight: 600;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.f-modal-meta {
+    display: flex;
+    gap: 1.5rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.f-modal-rating {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.f-modal-rating .stars {
+    color: var(--accent-light);
+    font-size: 1.1rem;
+}
+
+.profile-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    background: var(--bg-main);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    margin-bottom: 2rem;
+}
+
+.detail-item h4 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-light);
+    margin-bottom: 0.25rem;
+}
+
+.detail-item p {
+    margin-bottom: 0;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.profile-section {
+    margin-bottom: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+}
+
+.profile-section h3 {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+/* Rating Selector */
+.rating-selector {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.rating-selector input {
+    display: none;
+}
+
+.rating-selector label {
+    font-size: 2rem;
+    color: #e5e7eb;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.rating-selector label:hover,
+.rating-selector label:hover ~ label,
+.rating-selector input:checked ~ label {
+    color: var(--accent-light);
+}
+
+#rating-feedback {
+    width: 100%;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--border-radius);
+    font-family: inherit;
+    resize: vertical;
+    min-height: 80px;
+    margin-bottom: 1rem;
+}
+
+.reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.review-item {
+    background: var(--bg-main);
+    padding: 1rem;
+    border-radius: var(--border-radius);
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.review-date {
+    font-size: 0.8rem;
+    color: var(--text-light);
+}
+
+.review-text {
+    font-size: 0.9rem;
+    margin-bottom: 0;
+}
