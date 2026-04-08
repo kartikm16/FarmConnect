@@ -7,6 +7,56 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- State Management ---
     let cartItems = [];
+    
+    // Auth State
+    window.currentUser = null;
+
+    // Fetch user from backend session
+    async function fetchUser() {
+        try {
+            const res = await fetch('/api/user');
+            const user = await res.json();
+            window.currentUser = user;
+            updateAuthUI();
+        } catch (e) {
+            console.error('Failed to fetch user', e);
+        }
+    }
+    
+    // Auth UI Update
+    function updateAuthUI() {
+        const signInBtn = document.getElementById('google-signin-btn-container');
+        const userProfile = document.getElementById('user-profile');
+        const userName = document.getElementById('user-name');
+        const userImg = document.getElementById('user-img');
+
+        if (window.currentUser && (window.currentUser.id || window.currentUser._id)) {
+            if(signInBtn) signInBtn.style.display = 'none';
+            if(userProfile) {
+                userProfile.style.display = 'flex';
+                // If the user removed the span (as they did in index.html), this won't crash
+                if(userName) userName.textContent = window.currentUser.name || window.currentUser.displayName || 'User';
+                if(userImg) userImg.src = window.currentUser.picture || (window.currentUser.photos && window.currentUser.photos[0] ? window.currentUser.photos[0].value : 'https://via.placeholder.com/32');
+            }
+            console.log("Auth UI Updated: User logged in", window.currentUser.name);
+        } else {
+            if(signInBtn) signInBtn.style.display = 'block';
+            if(userProfile) userProfile.style.display = 'none';
+            console.log("Auth UI Updated: No user logged in");
+        }
+    }
+    
+    // Logout function
+    window.logoutGoogle = async function() {
+        try {
+            await fetch('/auth/logout', { method: 'POST' });
+            window.currentUser = null;
+            updateAuthUI();
+            fetchCart(); // Refresh cart for guest
+        } catch (e) {
+            console.error('Logout failed', e);
+        }
+    }
 
     // --- DOM Elements ---
     const navbar = document.getElementById('navbar');
@@ -21,6 +71,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeCartBtn = document.getElementById('close-cart');
     const cartItemsContainer = document.getElementById('cart-items');
     const cartTotalPriceEl = document.getElementById('cart-total-price');
+
+    // Order History DOM
+    const ordersBtn = document.getElementById('my-orders-btn');
+    const ordersOverlay = document.getElementById('orders-overlay');
+    const ordersSidebar = document.getElementById('orders-sidebar');
+    const closeOrdersBtn = document.getElementById('close-orders');
+    const ordersListHistory = document.getElementById('orders-list-history');
     const filterBtns = document.querySelectorAll('.filter-btn');
     const productsGrid = document.getElementById('products-grid');
     const farmersGrid = document.getElementById('farmers-grid');
@@ -28,173 +85,44 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- Data Sources ---
 
-    // Trending / Top Sellers Data
-    const trendingData = [
-        {
-            id: 101,
-            name: "Heirloom Tomatoes",
-            category: "vegetables",
-            price: "₹55.00",
-            unit: "per kg",
-            farmer: "Sunrise Organics",
-            image: "https://images.unsplash.com/photo-1561136594-7f68413baa99?auto=format&fit=crop&q=80&w=400",
-            isOrganic: true,
-            rating: 4.9,
-            sold: 320,
-            badge: "🔥 Top Seller"
-        },
-        {
-            id: 102,
-            name: "Baby Spinach",
-            category: "vegetables",
-            price: "₹35.00",
-            unit: "per bunch",
-            farmer: "Green Leaf Farms",
-            image: "https://images.unsplash.com/photo-1576045057995-568f588f82fb?auto=format&fit=crop&q=80&w=400",
-            isOrganic: true,
-            rating: 4.8,
-            sold: 210,
-            badge: "⭐ Most Loved"
-        },
-        {
-            id: 103,
-            name: "Alphonso Mangoes",
-            category: "fruits",
-            price: "₹120.00",
-            unit: "per dozen",
-            farmer: "Konkan Fresh",
-            image: "https://images.unsplash.com/photo-1553279768-865429fa0078?auto=format&fit=crop&q=80&w=400",
-            isOrganic: false,
-            rating: 5.0,
-            sold: 500,
-            badge: "🏆 Best Rated"
-        },
-        {
-            id: 104,
-            name: "Whole Wheat Flour",
-            category: "grains",
-            price: "₹45.00",
-            unit: "per kg",
-            farmer: "Plains Harvest",
-            image: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&q=80&w=400",
-            isOrganic: true,
-            rating: 4.7,
-            sold: 180,
-            badge: "🌾 Farmer's Pick"
-        }
-    ];
-    
-    // Sample Produce Data
-    const productsData = [
-        {
-            id: 1,
-            name: "Organic Tomatoes",
-            category: "vegetables",
-            price: "₹40.50",
-            unit: "per kg",
-            farmer: "Green Acres Farm",
-            image: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&q=80&w=400",
-            isOrganic: true
-        },
-        {
-            id: 2,
-            name: "Fresh Strawberries",
-            category: "fruits",
-            price: "₹60.00",
-            unit: "per box",
-            farmer: "Berry Sweet Farms",
-            image: "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?auto=format&fit=crop&q=80&w=400",
-            isOrganic: false
-        },
-        {
-            id: 3,
-            name: "Crisp Lettuce",
-            category: "vegetables",
-            price: "₹20.50",
-            unit: "per head",
-            farmer: "Valley Greens",
-            image: "https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?auto=format&fit=crop&q=80&w=400",
-            isOrganic: true
-        },
-        {
-            id: 4,
-            name: "Golden Sweet Corn",
-            category: "vegetables",
-            price: "₹30.00",
-            unit: "per dozen",
-            farmer: "Sunny Side Fields",
-            image: "https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&q=80&w=400",
-            isOrganic: false
-        },
-        {
-            id: 5,
-            name: "Rice",
-            category: "grains",
-            price: "₹50.50",
-            unit: "per kg",
-            farmer: "Highland Harvest",
-            image: "https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&q=80&w=400",
-            isOrganic: true
-        },
-        {
-            id: 6,
-            name: "Fresh Apples",
-            category: "fruits",
-            price: "₹40.00",
-            unit: "per kg",
-            farmer: "Orchard Hill",
-            image: "https://thumbs.dreamstime.com/b/red-apple-organic-farm-harvesting-garden-ripe-juicy-apples-plastic-box-crate-fruit-autumn-256681529.jpg",
-            isOrganic: true
-        },
-        {
-            id: 7,
-            name: "Organic Carrots",
-            category: "vegetables",
-            price: "₹20.00",
-            unit: "per bunch",
-            farmer: "Rooted Valley",
-            image: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?auto=format&fit=crop&q=80&w=400",
-            isOrganic: true
-        },
-        {
-            id: 8,
-            name: "Lentils",
-            category: "grains",
-            price: "₹30.50",
-            unit: "per kg",
-            farmer: "Plains Agriculture",
-            image: "https://i0.wp.com/post.medicalnewstoday.com/wp-content/uploads/sites/3/2019/11/lentils-in-a-jug-and-on-a-spoon.jpg?w=1155&h=1734",
-            isOrganic: false
-        }
-    ];
+    // Trending / Top Sellers & Sample Produce Data
+    let trendingData = [];
+    let productsData = [];
 
-    // Sample Farmers Data
-    const farmersData = [
-        {
-            id: 1,
-            name: "Marcus Thorne",
-            location: "Willamette Valley, OR",
-            specialty: ["Organic Veggies", "Herbs"],
-            avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150",
-            cover: "https://images.unsplash.com/photo-1500937386664-56d1dfef3844?auto=format&fit=crop&q=80&w=400"
-        },
-        {
-            id: 2,
-            name: "Elena Rodriguez",
-            location: "Central Valley, CA",
-            specialty: ["Citrus Fruits", "Avocados"],
-            avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=150",
-            cover: "https://images.unsplash.com/photo-1528183429752-a97d0bf99b5a?auto=format&fit=crop&q=80&w=400"
-        },
-        {
-            id: 3,
-            name: "David Chen",
-            location: "Finger Lakes, NY",
-            specialty: ["Apples", "Grapes", "Honey"],
-            avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=150",
-            cover: "https://images.unsplash.com/photo-1505944270255-72b8c68c6a70?auto=format&fit=crop&q=80&w=400"
-        }
-    ];
+    let farmersData = [];
+
+    // --- Data Fetching ---
+    async function fetchFarmers() {
+        try {
+            const res = await fetch('/api/farmers');
+            const data = await res.json();
+            // Map for home page simple display
+            farmersData = data.slice(0, 3).map(f => ({
+                id: f.userId,
+                name: f.farmName || 'Local Farmer',
+                location: f.location || 'India',
+                specialty: f.produceType ? f.produceType.split(',').slice(0, 2) : ["Organic"],
+                avatar: f.picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(f.farmName || 'F')}&background=random&size=150`,
+                cover: "https://images.unsplash.com/photo-1500937386664-56d1dfef3844?auto=format&fit=crop&q=80&w=400"
+            }));
+            renderFarmers();
+        } catch(e) { console.error('Failed to fetch farmers:', e); }
+    }
+
+    async function fetchProducts() {
+        try {
+            const res = await fetch('/api/products');
+            const data = await res.json();
+            productsData = data;
+            
+            // Reconstruct trending data by looking at rating/sold (dummy sorts)
+            trendingData = [...data].sort((a,b) => (b.rating || 4) - (a.rating || 4)).slice(0, 4);
+            
+            // Re-render sections
+            renderProducts();
+            renderTrending();
+        } catch(e) { console.error('Failed to fetch products from db:', e); }
+    }
 
     // --- Core Functions ---
 
@@ -286,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span class="farmer-name"><i class="ri-user-smile-line"></i> ${product.farmer}</span>
                     </div>
                     <div class="product-price">
-                        ${product.price} <span>${product.unit}</span>
+                        ${typeof product.price === 'number' ? `₹${product.price.toFixed(2)}` : product.price} <span>${product.unit || '/ kg'}</span>
                     </div>
                     <button class="btn add-to-cart-btn add-btn" data-id="${product.id}">
                         <i class="ri-shopping-cart-line"></i> Add to Cart
@@ -391,7 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <span class="sold-count"><i class="ri-fire-line"></i> ${product.sold}+ sold</span>
                         </div>
                         <div class="product-price">
-                            ${product.price} <span>${product.unit}</span>
+                            ${typeof product.price === 'number' ? `₹${product.price.toFixed(2)}` : product.price} <span>${product.unit || '/ kg'}</span>
                         </div>
                         <button class="btn add-to-cart-btn add-btn" data-id="${product.id}" data-source="trending">
                             <i class="ri-shopping-cart-line"></i> Add to Cart
@@ -456,28 +384,35 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.addEventListener('click', async (e) => {
                 e.preventDefault();
                 
-                const productId = parseInt(btn.getAttribute('data-id'));
+                const productId = btn.getAttribute('data-id'); // Keep as string for Firebase IDs
                 // Look in both productsData and trendingData
-                const product = productsData.find(p => p.id === productId)
-                             || trendingData.find(p => p.id === productId);
+                const product = productsData.find(p => String(p.id) === productId)
+                             || trendingData.find(p => String(p.id) === productId);
                 
-                if (!product) return;
+                if (!product) {
+                    console.error("Product NOT found in local data for ID:", productId);
+                    return;
+                }
 
                 // Add to cart via API
                 try {
-                    const priceNum = parseFloat(product.price.replace('₹', ''));
+                    let priceNum;
+                    if (typeof product.price === 'string') {
+                        priceNum = parseFloat(product.price.replace('₹', '').replace(',', ''));
+                    } else {
+                        priceNum = product.price;
+                    }
                     
                     const res = await fetch('/api/cart/add', {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             id: product.id,
                             name: product.name,
                             price: priceNum,
                             image: product.image,
-                            category: product.category
+                            category: product.category,
+                            farmerId: product.farmerId || '' 
                         })
                     });
                     
@@ -539,7 +474,100 @@ document.addEventListener('DOMContentLoaded', () => {
         
         closeCartBtn.addEventListener('click', closeCartSidebar);
         cartOverlay.addEventListener('click', closeCartSidebar);
+        
+        const checkoutBtn = document.querySelector('.checkout-btn');
+        if (checkoutBtn) {
+            checkoutBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                if(cartItems.length === 0) return;
+                try {
+                    checkoutBtn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Processing...';
+                    const res = await fetch('/api/orders', { method: 'POST' });
+                    const val = await res.json();
+                    if(res.ok) {
+                        checkoutBtn.innerHTML = 'Order Placed! <i class="ri-check-line"></i>';
+                        checkoutBtn.style.backgroundColor = 'var(--success)';
+                        setTimeout(() => {
+                            checkoutBtn.innerHTML = 'Proceed to Checkout';
+                            checkoutBtn.style.backgroundColor = '';
+                            closeCartSidebar();
+                            fetchCart();
+                            openOrdersSidebar(); // Show history after success
+                        }, 2000);
+                    } else {
+                        alert("Checkout failed: " + (val.error || "Unknown"));
+                        checkoutBtn.innerHTML = 'Proceed to Checkout';
+                    }
+                } catch(e) {
+                    console.error(e);
+                    checkoutBtn.innerHTML = 'Proceed to Checkout';
+                }
+            });
+        }
+
+        // Orders History listeners
+        if (ordersBtn) ordersBtn.addEventListener('click', (e) => { e.preventDefault(); openOrdersSidebar(); });
+        if (closeOrdersBtn) closeOrdersBtn.addEventListener('click', closeOrdersSidebar);
+        if (ordersOverlay) ordersOverlay.addEventListener('click', closeOrdersSidebar);
     }
+
+    function openOrdersSidebar() {
+        ordersSidebar.classList.add('active');
+        ordersOverlay.classList.add('active');
+        fetchOrderHistory();
+    }
+
+    function closeOrdersSidebar() {
+        ordersSidebar.classList.remove('active');
+        ordersOverlay.classList.remove('active');
+    }
+
+    async function fetchOrderHistory() {
+        if (!ordersListHistory) return;
+        ordersListHistory.innerHTML = '<p>Loading your orders...</p>';
+        try {
+            const res = await fetch('/api/orders');
+            const orders = await res.json();
+            if (orders.length === 0) {
+                ordersListHistory.innerHTML = '<p>You haven\'t placed any orders yet.</p>';
+                return;
+            }
+            ordersListHistory.innerHTML = orders.map(order => `
+                <div class="order-history-item" style="border-bottom: 1px solid #eee; padding: 10px 0;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <strong>Order #${order.id.slice(-6)}</strong>
+                        <span>${new Date(order.createdAt).toLocaleDateString()}</span>
+                    </div>
+                    <div style="font-size: 0.9rem; color: #666; margin: 5px 0;">
+                        ${order.items.map(i => `${i.name} (x${i.quantity})`).join(', ')}
+                    </div>
+                    <strong>Total: ₹${order.totalAmount}</strong>
+                    <div style="margin-top: 10px;">
+                        ${order.farmerIds ? order.farmerIds.map(fId => `
+                            <button onclick="reviewFarmer('${fId}')" class="btn btn-outline" style="font-size: 0.7rem; padding: 4px 8px;">Rate Farmer</button>
+                        `).join(' ') : ''}
+                    </div>
+                </div>
+            `).join('');
+        } catch (err) {
+            ordersListHistory.innerHTML = '<p>Error loading history.</p>';
+        }
+    }
+
+    window.reviewFarmer = async (fId) => {
+        const rating = prompt("Rate this farmer (1-5):", "5");
+        const feedback = prompt("Leave a short feedback:");
+        if (rating && feedback) {
+            try {
+                const res = await fetch(`/api/farmer/${fId}/review`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ rating: parseInt(rating), feedback })
+                });
+                if (res.ok) alert("Review sent! Thank you.");
+            } catch (err) { alert("Review failed."); }
+        }
+    };
     
     function openCartSidebar() {
         if (cartSidebar && cartOverlay) {
@@ -580,11 +608,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="cart-item-price">₹${item.price.toFixed(2)}</div>
                         <div class="cart-item-actions">
                             <div class="qty-control">
-                                <button class="qty-btn" onclick="updateCartQuantity(${item.id}, 'decrease')">-</button>
+                                <button class="qty-btn" onclick="updateCartQuantity('${item.id}', 'decrease')">-</button>
                                 <span class="qty-value">${item.quantity}</span>
-                                <button class="qty-btn" onclick="updateCartQuantity(${item.id}, 'increase')">+</button>
+                                <button class="qty-btn" onclick="updateCartQuantity('${item.id}', 'increase')">+</button>
                             </div>
-                            <button class="remove-item" onclick="removeFromCart(${item.id})">
+                            <button class="remove-item" onclick="removeFromCart('${item.id}')">
                                 <i class="ri-delete-bin-line"></i>
                             </button>
                         </div>
@@ -690,14 +718,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Initialize Everything ---
-    initMobileMenu();
-    initScrollEffects();
-    renderProducts();      // Initial render of all products
-    initFilters();
-    renderTrending();      // Render trending/top-seller section
-    renderFarmers();
-    initFormValidation();
-    initCartSidebar();
-    fetchCart(); // Load initial cart state
+    // Load user state first to ensure UI updates even if other components fail
+    fetchUser(); 
+    
+    // Wrap other initializations in try-catch to prevent a single component crash from breaking the whole page
+    try { initMobileMenu(); } catch(e) { console.error("initMobileMenu error", e); }
+    try { initScrollEffects(); } catch(e) { console.error("initScrollEffects error", e); }
+    try { renderProducts(); } catch(e) { console.error("renderProducts error", e); }
+    try { initFilters(); } catch(e) { console.error("initFilters error", e); }
+    try { renderTrending(); } catch(e) { console.error("renderTrending error", e); }
+    try { initTestimonialSlider(); } catch(e) { console.error("initTestimonialSlider error", e); }
+    try { initFormValidation(); } catch(e) { console.error("initFormValidation error", e); }
+    try { initCartSidebar(); } catch(e) { console.error("initCartSidebar error", e); }
+    try { fetchProducts(); } catch(e) { console.error("fetchProducts error", e); }
+    try { fetchFarmers(); } catch(e) { console.error("fetchFarmers error", e); }
 
 });

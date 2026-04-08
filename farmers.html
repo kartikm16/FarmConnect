@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect with Farmers - FarmConnect</title>
+    <meta name="description" content="Discover local farmers and place custom orders directly from the source.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="farmers.css">
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="container nav-container">
+            <a href="index.html" class="logo">
+                <i class="ri-leaf-fill"></i> Farm<span>Connect</span>
+            </a>
+            
+            <ul class="nav-links" id="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="marketplace.html">Marketplace</a></li>
+                <li><a href="farmers.html" class="active">Farmers</a></li>
+                <li><a href="index.html#about">About</a></li>
+                <li><a href="index.html#contact">Contact</a></li>
+                <li><a href="farmer-login.html" class="nav-sell-btn">🌾 Sell with Us</a></li>
+            </ul>
+
+            <div class="nav-actions">
+                <!-- Google Sign In Container -->
+                <div id="google-auth-container" style="margin-right: 15px;">
+                    <div id="google-signin-btn-container">
+                        <a href="/auth/google" class="btn btn-outline" style="padding: 0.5rem 1rem; display: flex; align-items: center; gap: 8px;">
+                            <i class="ri-google-fill"></i> Sign in
+                        </a>
+                    </div>
+                    
+                    <div id="user-profile" style="display: none; align-items: center; gap: 10px;">
+                        <img id="user-img" src="" alt="User" style="width: 32px; height: 32px; border-radius: 50%;">
+                       
+                        <button id="my-orders-btn" class="btn btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;"><i class="ri-history-line"></i> My Orders</button>
+                        <button onclick="logoutGoogle()" class="btn btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">Logout</button>
+                    </div>
+                </div>
+
+                <button class="cart-btn" aria-label="Cart">
+                    <i class="ri-shopping-cart-2-line"></i>
+                    <span class="cart-counter" id="cart-count">0</span>
+                </button>
+                <button class="mobile-toggle" id="mobile-toggle" aria-label="Toggle menu">
+                    <i class="ri-menu-line"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <!-- Hero -->
+        <section class="fp-hero">
+            <div class="fp-hero-bg"></div>
+            <div class="container fp-hero-content">
+                <span class="badge">500+ Verified Farmers</span>
+                <h1>Connect with <span class="highlight">Farmers</span></h1>
+                <p>Order directly from the source — fresh, fair, and fully customizable</p>
+                <div class="fp-hero-stats">
+                    <div class="fp-stat"><strong>500+</strong><span>Active Farmers</span></div>
+                    <div class="fp-stat-divider"></div>
+                    <div class="fp-stat"><strong>20+</strong><span>Districts Covered</span></div>
+                    <div class="fp-stat-divider"></div>
+                    <div class="fp-stat"><strong>98%</strong><span>Customer Satisfaction</span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Controls -->
+        <div class="fp-controls-bar">
+            <div class="container fp-controls-inner">
+                <div class="fp-search-wrap">
+                    <i class="ri-search-line"></i>
+                    <input type="text" id="farmer-search" placeholder="Search by name or location…">
+                </div>
+                <div class="fp-filter-pills">
+                    <button class="fp-pill active" data-filter="all">All Farmers</button>
+                    <button class="fp-pill" data-filter="Vegetables">Vegetables</button>
+                    <button class="fp-pill" data-filter="Fruits">Fruits</button>
+                    <button class="fp-pill" data-filter="Organic">Organic</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Farmer Grid -->
+        <section class="fp-grid-section">
+            <div class="container">
+                <div class="fp-farmers-grid" id="main-farmers-grid">
+                    <!-- Injected by JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Trust Section -->
+        <section class="fp-trust section-padding bg-light">
+            <div class="container text-center">
+                <h2>Why Buy <span class="highlight">Directly?</span></h2>
+                <p style="max-width:520px;margin:0 auto 3rem;">We cut out the middlemen so you get fresher produce and farmers get fairer pay.</p>
+                <div class="fp-trust-grid">
+                    <div class="fp-trust-card">
+                        <div class="fp-trust-icon"><i class="ri-verified-badge-fill"></i></div>
+                        <h3>Verified Farmers</h3>
+                        <p>Every farmer is personally vetted for quality, safety, and sustainable practices.</p>
+                    </div>
+                    <div class="fp-trust-card">
+                        <div class="fp-trust-icon accent"><i class="ri-money-dollar-circle-fill"></i></div>
+                        <h3>Direct Pricing</h3>
+                        <p>Pay fair, farm-gate prices. 80% of every rupee reaches the farmer directly.</p>
+                    </div>
+                    <div class="fp-trust-card">
+                        <div class="fp-trust-icon dark"><i class="ri-shield-check-fill"></i></div>
+                        <h3>No Middlemen</h3>
+                        <p>Complete supply-chain transparency — from the farm to your front door.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Full-screen Farmer Profile Modal -->
+    <div class="fp-profile-overlay" id="fp-profile-overlay">
+        <div class="fp-profile-panel" id="fp-profile-panel">
+
+            <!-- Panel Close -->
+            <button class="fp-panel-close" id="fp-panel-close" aria-label="Close profile">
+                <i class="ri-close-line"></i>
+            </button>
+
+            <!-- Cover + Avatar -->
+            <div class="fp-panel-cover" id="fp-panel-cover">
+                <div class="fp-panel-avatar-wrap">
+                    <img id="fp-panel-avatar" src="" alt="Farmer">
+                    <span class="fp-verified-badge"><i class="ri-verified-badge-fill"></i></span>
+                </div>
+            </div>
+
+            <div class="fp-panel-body">
+                <!-- Left: Profile Info -->
+                <div class="fp-panel-info">
+                    <h2 id="fp-panel-name"></h2>
+                    <p class="fp-panel-location"><i class="ri-map-pin-fill"></i> <span id="fp-panel-location"></span></p>
+                    <div class="fp-panel-rating">
+                        <span class="fp-stars" id="fp-panel-stars"></span>
+                        <span id="fp-panel-rating-num" class="fp-rating-val"></span>
+                        <span class="fp-rating-label">rating</span>
+                    </div>
+
+                    <div class="fp-panel-section">
+                        <h4><i class="ri-information-line"></i> About</h4>
+                        <p id="fp-panel-bio"></p>
+                    </div>
+
+                    <div class="fp-panel-section">
+                        <h4><i class="ri-seedling-line"></i> Farming Methods</h4>
+                        <div class="fp-methods-list" id="fp-panel-methods"></div>
+                    </div>
+
+                    <div class="fp-panel-section">
+                        <h4><i class="ri-store-2-line"></i> Available Products</h4>
+                        <div class="fp-products-tags" id="fp-panel-products"></div>
+                    </div>
+
+                    <div class="fp-panel-section">
+                        <h4><i class="ri-star-line"></i> Rate this Farmer</h4>
+                        <div class="rating-input-container">
+                            <div class="star-rating" id="star-rating-input">
+                                <i class="ri-star-line" data-value="1"></i>
+                                <i class="ri-star-line" data-value="2"></i>
+                                <i class="ri-star-line" data-value="3"></i>
+                                <i class="ri-star-line" data-value="4"></i>
+                                <i class="ri-star-line" data-value="5"></i>
+                            </div>
+                            <textarea id="rating-feedback" placeholder="Share your experience with this farmer..."></textarea>
+                            <button id="submit-rating-btn" class="fp-btn fp-btn-primary">Submit Rating</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Custom Order Form -->
+                <div class="fp-panel-order">
+                    <div class="fp-order-card">
+                        <div class="fp-order-header">
+                            <i class="ri-edit-box-fill"></i>
+                            <div>
+                                <h3>Place a Custom Order</h3>
+                                <p>Tell <span id="fp-order-farmer-label"></span> exactly what you need</p>
+                            </div>
+                        </div>
+
+                        <form id="custom-order-form">
+                            <input type="hidden" id="hidden-farmer-name">
+
+                            <div class="fp-form-row">
+                                <div class="fp-form-group">
+                                    <label for="productName"><i class="ri-plant-line"></i> Product</label>
+                                    <input type="text" id="productName" name="productName" required placeholder="e.g. Tomatoes, Mangoes">
+                                </div>
+                                <div class="fp-form-group">
+                                    <label for="quantity"><i class="ri-scales-line"></i> Quantity</label>
+                                    <input type="text" id="quantity" name="quantity" required placeholder="e.g. 5 kg">
+                                </div>
+                            </div>
+
+                            <div class="fp-form-row">
+                                <div class="fp-form-group">
+                                    <label for="deliveryDate"><i class="ri-calendar-line"></i> Delivery Date</label>
+                                    <input type="date" id="deliveryDate" name="deliveryDate" required>
+                                </div>
+                                <div class="fp-form-group">
+                                    <label for="budget"><i class="ri-money-rupee-circle-line"></i> Budget (optional)</label>
+                                    <input type="text" id="budget" name="budget" placeholder="e.g. ₹500">
+                                </div>
+                            </div>
+
+                            <div class="fp-form-group full">
+                                <label for="notes"><i class="ri-sticky-note-line"></i> Special Requests</label>
+                                <textarea id="notes" name="notes" rows="3" placeholder="Any specific requirements, packaging preferences…"></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-full fp-submit-btn" id="fp-submit-btn">
+                                <i class="ri-send-plane-fill"></i> Submit Custom Order
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="fp-toast">
+        <i class="ri-checkbox-circle-fill"></i>
+        Your order request has been sent to the farmer!
+    </div>
+
+    <!-- Cart Sidebar -->
+    <div class="cart-overlay" id="cart-overlay"></div>
+    <div class="cart-sidebar" id="cart-sidebar">
+        <div class="cart-header">
+            <h2>Your Cart</h2>
+            <button class="close-cart" id="close-cart" aria-label="Close cart">
+                <i class="ri-close-line"></i>
+            </button>
+        </div>
+        <div class="cart-items" id="cart-items">
+            <!-- Items injected via JS -->
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total:</span>
+                <span id="cart-total-price">₹0.00</span>
+            </div>
+            <button class="btn btn-primary btn-full checkout-btn">Proceed to Checkout</button>
+        </div>
+    </div>
+
+    <!-- Order History Modal -->
+    <div class="cart-overlay" id="orders-overlay"></div>
+    <div class="cart-sidebar" id="orders-sidebar">
+        <div class="cart-header">
+            <h2>Order History</h2>
+            <button class="close-cart" id="close-orders">
+                <i class="ri-close-line"></i>
+            </button>
+        </div>
+        <div class="cart-items" id="orders-list-history" style="padding: 1.5rem;">
+            <!-- History injected via JS -->
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="farmers.js"></script>
+</body>
+</html>

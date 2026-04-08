@@ -11,6 +11,55 @@ document.addEventListener('DOMContentLoaded', () => {
     // -------------------------------------------------------------------
     let cartItems   = [];
     let activeCategory = 'all';
+    
+    // Auth State
+    window.currentUser = null;
+
+    // Fetch user from backend session
+    async function fetchUser() {
+        try {
+            const res = await fetch('/api/user');
+            const user = await res.json();
+            window.currentUser = user;
+            updateAuthUI();
+        } catch (e) {
+            console.error('Failed to fetch user', e);
+        }
+    }
+    
+    // Auth UI Update
+    function updateAuthUI() {
+        const signInBtn = document.getElementById('google-signin-btn-container');
+        const userProfile = document.getElementById('user-profile');
+        const userName = document.getElementById('user-name');
+        const userImg = document.getElementById('user-img');
+
+        if (window.currentUser && (window.currentUser.id || window.currentUser._id)) {
+            if(signInBtn) signInBtn.style.display = 'none';
+            if(userProfile) {
+                userProfile.style.display = 'flex';
+                if(userName) userName.textContent = window.currentUser.name || window.currentUser.displayName || 'User';
+                if(userImg) userImg.src = window.currentUser.picture || (window.currentUser.photos && window.currentUser.photos[0] ? window.currentUser.photos[0].value : 'https://via.placeholder.com/32');
+            }
+            console.log("Auth UI Updated: User logged in", window.currentUser.name);
+        } else {
+            if(signInBtn) signInBtn.style.display = 'block';
+            if(userProfile) userProfile.style.display = 'none';
+            console.log("Auth UI Updated: No user logged in");
+        }
+    }
+    
+    // Logout function
+    window.logoutGoogle = async function() {
+        try {
+            await fetch('/auth/logout', { method: 'POST' });
+            window.currentUser = null;
+            updateAuthUI();
+            fetchCart(); // Refresh cart for guest
+        } catch (e) {
+            console.error('Logout failed', e);
+        }
+    }
     let organicOnly    = false;
     let maxPrice       = 200;
     let searchQuery    = '';
@@ -20,20 +69,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // -------------------------------------------------------------------
     // ALL PRODUCTS (marketplace + trending merged)
     // -------------------------------------------------------------------
-    const allProducts = [
-        { id: 1,   name: "Organic Tomatoes",    category: "vegetables", price: 40.50,  unit: "per kg",     farmer: "Green Acres Farm",    image: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&q=80&w=400",  isOrganic: true,  rating: 4.5 },
-        { id: 2,   name: "Fresh Strawberries",  category: "fruits",     price: 60.00,  unit: "per box",    farmer: "Berry Sweet Farms",   image: "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?auto=format&fit=crop&q=80&w=400",  isOrganic: false, rating: 4.3 },
-        { id: 3,   name: "Crisp Lettuce",       category: "vegetables", price: 20.50,  unit: "per head",   farmer: "Valley Greens",       image: "https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?auto=format&fit=crop&q=80&w=400",  isOrganic: true,  rating: 4.2 },
-        { id: 4,   name: "Golden Sweet Corn",   category: "vegetables", price: 30.00,  unit: "per dozen",  farmer: "Sunny Side Fields",   image: "https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&q=80&w=400",  isOrganic: false, rating: 4.0 },
-        { id: 5,   name: "Rice",                category: "grains",     price: 50.50,  unit: "per kg",     farmer: "Highland Harvest",    image: "https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&q=80&w=400",  isOrganic: true,  rating: 4.6 },
-        { id: 6,   name: "Fresh Apples",        category: "fruits",     price: 40.00,  unit: "per kg",     farmer: "Orchard Hill",        image: "https://thumbs.dreamstime.com/b/red-apple-organic-farm-harvesting-garden-ripe-juicy-apples-plastic-box-crate-fruit-autumn-256681529.jpg", isOrganic: true, rating: 4.7 },
-        { id: 7,   name: "Organic Carrots",     category: "vegetables", price: 20.00,  unit: "per bunch",  farmer: "Rooted Valley",       image: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?auto=format&fit=crop&q=80&w=400",  isOrganic: true,  rating: 4.4 },
-        { id: 8,   name: "Lentils",             category: "grains",     price: 30.50,  unit: "per kg",     farmer: "Plains Agriculture",  image: "https://i0.wp.com/post.medicalnewstoday.com/wp-content/uploads/sites/3/2019/11/lentils-in-a-jug-and-on-a-spoon.jpg?w=1155&h=1734", isOrganic: false, rating: 4.1 },
-        { id: 101, name: "Heirloom Tomatoes",   category: "vegetables", price: 55.00,  unit: "per kg",     farmer: "Sunrise Organics",    image: "https://images.unsplash.com/photo-1561136594-7f68413baa99?auto=format&fit=crop&q=80&w=400",  isOrganic: true,  rating: 4.9 },
-        { id: 102, name: "Baby Spinach",        category: "vegetables", price: 35.00,  unit: "per bunch",  farmer: "Green Leaf Farms",    image: "https://images.unsplash.com/photo-1576045057995-568f588f82fb?auto=format&fit=crop&q=80&w=400",  isOrganic: true,  rating: 4.8 },
-        { id: 103, name: "Alphonso Mangoes",    category: "fruits",     price: 120.00, unit: "per dozen",  farmer: "Konkan Fresh",        image: "https://images.unsplash.com/photo-1553279768-865429fa0078?auto=format&fit=crop&q=80&w=400",  isOrganic: false, rating: 5.0 },
-        { id: 104, name: "Whole Wheat Flour",   category: "grains",     price: 45.00,  unit: "per kg",     farmer: "Plains Harvest",      image: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&q=80&w=400",  isOrganic: true,  rating: 4.7 },
-    ];
+    // Global arrays holding dynamic products
+    let allProducts = [];
+
+    async function fetchProducts() {
+        try {
+            const res = await fetch('/api/products');
+            allProducts = await res.json();
+            
+            // Initial render
+            renderProducts();
+        } catch(e) { console.error('Failed to fetch products from db:', e); }
+    }
 
     // -------------------------------------------------------------------
     // DOM REFS
@@ -48,6 +95,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeCartBtn      = document.getElementById('close-cart');
     const cartItemsContainer= document.getElementById('cart-items');
     const cartTotalPriceEl  = document.getElementById('cart-total-price');
+
+    // Order History DOM
+    const ordersBtn = document.getElementById('my-orders-btn');
+    const ordersOverlay = document.getElementById('orders-overlay');
+    const ordersSidebar = document.getElementById('orders-sidebar');
+    const closeOrdersBtn = document.getElementById('close-orders');
+    const ordersListHistory = document.getElementById('orders-list-history');
 
     const searchInput       = document.getElementById('mp-search');
     const clearSearchBtn    = document.getElementById('clear-search');
@@ -176,14 +230,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span class="product-category">${p.category}</span>
                 <h3 class="product-title">${p.name}</h3>
                 <div class="product-meta">
-                    <span class="farmer-name"><i class="ri-user-smile-line"></i> ${p.farmer}</span>
+                    <span class="farmer-name"><i class="ri-user-smile-line"></i> ${p.farmer || 'Local Farmer'}</span>
                 </div>
                 <div class="mp-rating-row">
                     ${renderStars(p.rating)}
                     <span class="mp-rating-num">${p.rating}</span>
                 </div>
                 <div class="product-price">
-                    ₹${p.price.toFixed(2)} <span>${p.unit}</span>
+                    ${typeof p.price === 'number' ? `₹${p.price.toFixed(2)}` : p.price} <span>${p.unit || '/ kg'}</span>
                 </div>
                 <button class="btn add-to-cart-btn add-btn" data-id="${p.id}">
                     <i class="ri-shopping-cart-line"></i> Add to Cart
@@ -345,11 +399,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="cart-item-price">₹${item.price.toFixed(2)}</div>
                         <div class="cart-item-actions">
                             <div class="qty-control">
-                                <button class="qty-btn" onclick="updateCartQuantity(${item.id},'decrease')">-</button>
+                                <button class="qty-btn" onclick="updateCartQuantity('${item.id}','decrease')">-</button>
                                 <span class="qty-value">${item.quantity}</span>
-                                <button class="qty-btn" onclick="updateCartQuantity(${item.id},'increase')">+</button>
+                                <button class="qty-btn" onclick="updateCartQuantity('${item.id}','increase')">+</button>
                             </div>
-                            <button class="remove-item" onclick="removeFromCart(${item.id})">
+                            <button class="remove-item" onclick="removeFromCart('${item.id}')">
                                 <i class="ri-delete-bin-line"></i>
                             </button>
                         </div>
@@ -362,10 +416,111 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function openCartSidebar()  { cartSidebar.classList.add('active'); cartOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
     function closeCartSidebar() { cartSidebar.classList.remove('active'); cartOverlay.classList.remove('active'); document.body.style.overflow = ''; }
+    
+    function initCartSidebar() {
+        if (!cartBtn || !closeCartBtn || !cartOverlay || !cartSidebar) return;
+        
+        cartBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            openCartSidebar();
+        });
+        
+        closeCartBtn.addEventListener('click', closeCartSidebar);
+        cartOverlay.addEventListener('click', closeCartSidebar);
+        
+        const checkoutBtn = document.querySelector('.checkout-btn');
+        if (checkoutBtn) {
+            checkoutBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                if(cartItems.length === 0) return;
+                try {
+                    checkoutBtn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Processing...';
+                    const res = await fetch('/api/orders', { method: 'POST' });
+                    const val = await res.json();
+                    if(res.ok) {
+                        checkoutBtn.innerHTML = 'Order Placed! <i class="ri-check-line"></i>';
+                        checkoutBtn.style.backgroundColor = 'var(--success)';
+                        setTimeout(() => {
+                            checkoutBtn.innerHTML = 'Proceed to Checkout';
+                            checkoutBtn.style.backgroundColor = '';
+                            closeCartSidebar();
+                            fetchCart();
+                            openOrdersSidebar();
+                        }, 2000);
+                    } else {
+                        alert("Checkout failed: " + (val.error || "Unknown"));
+                        checkoutBtn.innerHTML = 'Proceed to Checkout';
+                    }
+                } catch(e) {
+                    console.error(e);
+                    checkoutBtn.innerHTML = 'Proceed to Checkout';
+                }
+            });
+        }
 
-    cartBtn.addEventListener('click', e => { e.preventDefault(); openCartSidebar(); });
-    closeCartBtn.addEventListener('click', closeCartSidebar);
-    cartOverlay.addEventListener('click', closeCartSidebar);
+        // Orders History listeners
+        if (ordersBtn) ordersBtn.addEventListener('click', (e) => { e.preventDefault(); openOrdersSidebar(); });
+        if (closeOrdersBtn) closeOrdersBtn.addEventListener('click', closeOrdersSidebar);
+        if (ordersOverlay) ordersOverlay.addEventListener('click', closeOrdersSidebar);
+    }
+
+    function openOrdersSidebar() {
+        ordersSidebar.classList.add('active');
+        ordersOverlay.classList.add('active');
+        fetchOrderHistory();
+    }
+
+    function closeOrdersSidebar() {
+        ordersSidebar.classList.remove('active');
+        ordersOverlay.classList.remove('active');
+    }
+
+    async function fetchOrderHistory() {
+        if (!ordersListHistory) return;
+        ordersListHistory.innerHTML = '<p>Loading your orders...</p>';
+        try {
+            const res = await fetch('/api/orders');
+            const orders = await res.json();
+            if (orders.length === 0) {
+                ordersListHistory.innerHTML = '<p>You haven\'t placed any orders yet.</p>';
+                return;
+            }
+            ordersListHistory.innerHTML = orders.map(order => `
+                <div class="order-history-item" style="border-bottom: 1px solid #eee; padding: 10px 0;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <strong>Order #${order.id.slice(-6)}</strong>
+                        <span>${new Date(order.createdAt).toLocaleDateString()}</span>
+                    </div>
+                    <div style="font-size: 0.9rem; color: #666; margin: 5px 0;">
+                        ${order.items.map(i => `${i.name} (x${i.quantity})`).join(', ')}
+                    </div>
+                    <strong>Total: ₹${order.totalAmount}</strong>
+                    <div style="margin-top: 10px;">
+                        ${order.farmerIds ? order.farmerIds.map(fId => `
+                            <button onclick="reviewFarmer('${fId}')" class="btn btn-outline" style="font-size: 0.7rem; padding: 4px 8px;">Rate Farmer</button>
+                        `).join(' ') : ''}
+                    </div>
+                </div>
+            `).join('');
+        } catch (err) {
+            ordersListHistory.innerHTML = '<p>Error loading history.</p>';
+        }
+    }
+
+    window.reviewFarmer = async (fId) => {
+        const rating = prompt("Rate this farmer (1-5):", "5");
+        const feedback = prompt("Leave a short feedback:");
+        if (rating && feedback) {
+            try {
+                const res = await fetch(`/api/farmer/${fId}/review`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ rating: parseInt(rating), feedback })
+                });
+                if (res.ok) alert("Review sent! Thank you.");
+            } catch (err) { alert("Review failed."); }
+        }
+    };
 
     function attachCartListeners() {
         document.querySelectorAll('.add-btn').forEach(btn => {
@@ -375,18 +530,31 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.add-btn').forEach(btn => {
             btn.addEventListener('click', async e => {
                 e.preventDefault();
-                const productId = parseInt(btn.getAttribute('data-id'));
-                const product   = allProducts.find(p => p.id === productId);
-                if (!product) return;
+                const productId = btn.getAttribute('data-id'); // Keep as string
+                const product   = allProducts.find(p => String(p.id) === productId);
+                if (!product) {
+                    console.error("Product NOT found in allProducts for ID:", productId);
+                    return;
+                }
 
                 try {
+                    let priceNum;
+                    if (typeof product.price === 'string') {
+                        priceNum = parseFloat(product.price.replace('₹', '').replace(',', ''));
+                    } else {
+                        priceNum = product.price;
+                    }
+
                     await fetch('/api/cart/add', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            id: product.id, name: product.name,
-                            price: product.price, image: product.image,
-                            category: product.category
+                            id: product.id, 
+                            name: product.name,
+                            price: priceNum, 
+                            image: product.image,
+                            category: product.category,
+                            farmerId: product.farmerId || ''
                         })
                     });
                     await fetchCart();
@@ -422,13 +590,21 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     window.removeFromCart = async (id) => {
-        const res = await fetch(`/api/cart/remove/${id}`, { method: 'DELETE' });
+        const res = await fetch(`/api/cart/remove/${id}`, { 
+            method: 'DELETE'
+        });
         if (res.ok) { const d = await res.json(); cartItems = d.cart; updateCartUI(); }
     };
 
     // -------------------------------------------------------------------
     // INIT
     // -------------------------------------------------------------------
-    renderProducts();
-    fetchCart();
+    // Load User First
+    fetchUser();
+    
+    // Safety Wrap
+    try { initCartSidebar(); }  catch(e){ console.error(e); }
+    try { fetchProducts(); }    catch(e){ console.error(e); }
+    try { fetchCart(); }        catch(e){ console.error(e); }
+
 });

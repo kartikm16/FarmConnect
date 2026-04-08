@@ -24,14 +24,31 @@
             </a>
             
             <ul class="nav-links" id="nav-links">
-                <li><a href="#home" class="active">Home</a></li>
-                <li><a href="/marketplace">Marketplace</a></li>
-                <li><a href="#farmers">Farmers</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="#contact">Contact</a></li>
+                <li><a href="index.html#home" class="active">Home</a></li>
+                <li><a href="marketplace.html">Marketplace</a></li>
+                <li><a href="farmers.html">Farmers</a></li>
+                <li><a href="index.html#about">About</a></li>
+                <li><a href="index.html#contact">Contact</a></li>
+                <li><a href="farmer-login.html" class="nav-sell-btn">🌾 Sell with Us</a></li>
             </ul>
 
             <div class="nav-actions">
+                <!-- Google Sign In Container -->
+                <div id="google-auth-container" style="margin-right: 15px;">
+                    <div id="google-signin-btn-container">
+                        <a href="/auth/google" class="btn btn-outline" style="padding: 0.5rem 1rem; display: flex; align-items: center; gap: 8px;">
+                            <i class="ri-google-fill"></i> Sign in
+                        </a>
+                    </div>
+                    
+                    <div id="user-profile" style="display: none; align-items: center; gap: 10px;">
+                        <img id="user-img" src="" alt="User" style="width: 32px; height: 32px; border-radius: 50%;">
+                       
+                        <button id="my-orders-btn" class="btn btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;"><i class="ri-history-line"></i> My Orders</button>
+                        <button onclick="logoutGoogle()" class="btn btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">Logout</button>
+                    </div>
+                </div>
+
                 <button class="cart-btn" aria-label="Cart">
                     <i class="ri-shopping-cart-2-line"></i>
                     <span class="cart-counter" id="cart-count">0</span>
@@ -52,8 +69,8 @@
                     <h1>Fresh From Farm to <span class="highlight">Your Doorstep</span></h1>
                     <p>Connect directly with local farmers and enjoy peak-season produce delivered within hours of harvest. Support sustainable agriculture with every bite.</p>
                     <div class="hero-btns">
-                        <a href="#marketplace" class="btn btn-primary">Shop Fresh Produce <i class="ri-arrow-right-line"></i></a>
-                        <a href="#farmers" class="btn btn-outline">Join as Farmer</a>
+                        <a href="/marketplace" class="btn btn-primary">Shop Fresh Produce <i class="ri-arrow-right-line"></i></a>
+                        <a href="/farmer-login.html" class="btn btn-outline">Join as Farmer</a>
                     </div>
                     <div class="hero-stats">
                         <div class="stat">
@@ -291,9 +308,9 @@
                     </div>
                     
                     <div class="social-links mt-4">
-                        <a href="#" aria-label="Facebook"><i class="ri-facebook-fill"></i></a>
-                        <a href="#" aria-label="Twitter"><i class="ri-twitter-x-line"></i></a>
-                        <a href="#" aria-label="Instagram"><i class="ri-instagram-line"></i></a>
+                        <a href="https://www.facebook.com/" target="_blank" aria-label="Facebook"><i class="ri-facebook-fill"></i></a>
+                        <a href="https://twitter.com" target="_blank" aria-label="Twitter"><i class="ri-twitter-x-line"></i></a>
+                        <a href="https://instagram.com" target="_blank" aria-label="Instagram"><i class="ri-instagram-line"></i></a>
                     </div>
                 </div>
                 
@@ -351,7 +368,7 @@
                     <ul>
                         <li><a href="#home">Home</a></li>
                         <li><a href="#marketplace">Marketplace</a></li>
-                        <li><a href="#farmers">Our Farmers</a></li>
+                        <li><a href="farmers.html">Our Farmers</a></li>
                         <li><a href="#about">About Us</a></li>
                     </ul>
                 </div>
@@ -401,6 +418,20 @@
                 <span id="cart-total-price">₹0.00</span>
             </div>
             <button class="btn btn-primary btn-full checkout-btn">Proceed to Checkout</button>
+        </div>
+    </div>
+
+    <!-- Order History Modal -->
+    <div class="cart-overlay" id="orders-overlay"></div>
+    <div class="cart-sidebar" id="orders-sidebar">
+        <div class="cart-header">
+            <h2>Order History</h2>
+            <button class="close-cart" id="close-orders">
+                <i class="ri-close-line"></i>
+            </button>
+        </div>
+        <div class="cart-items" id="orders-list-history" style="padding: 1.5rem;">
+            <!-- History injected via JS -->
         </div>
     </div>
 
