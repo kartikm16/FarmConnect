@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     let organicOnly    = false;
-    let maxPrice       = 200;
+    let maxPrice       = 2500;
     let searchQuery    = '';
     let sortOrder      = 'default';
     let viewMode       = 'grid';
@@ -152,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Category
         if (activeCategory !== 'all') {
-            list = list.filter(p => p.category === activeCategory);
+            list = list.filter(p => p.category && p.category.toLowerCase() === activeCategory.toLowerCase());
         }
 
         // Organic
@@ -161,7 +161,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Price
-        list = list.filter(p => p.price <= maxPrice);
+        list = list.filter(p => {
+            const priceNum = typeof p.price === 'string' ? parseFloat(p.price.replace(/[^\d.-]/g, '')) : p.price;
+            return priceNum <= maxPrice;
+        });
 
         // Sort
         switch (sortOrder) {
@@ -273,7 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (searchQuery)           chips.push({ label: `Search: "${searchQuery}"`, reset: () => { searchQuery = ''; searchInput.value = ''; } });
         if (activeCategory !== 'all') chips.push({ label: `Category: ${activeCategory}`, reset: () => { activeCategory = 'all'; document.querySelector('input[name="category"][value="all"]').checked = true; } });
         if (organicOnly)           chips.push({ label: 'Organic Only', reset: () => { organicOnly = false; organicCheckbox.checked = false; } });
-        if (maxPrice < 200)        chips.push({ label: `Max ₹${maxPrice}`, reset: () => { maxPrice = 200; priceRange.value = 200; priceRangeValue.textContent = '₹200'; } });
+        if (maxPrice < 2500)       chips.push({ label: `Max ₹${maxPrice}`, reset: () => { maxPrice = 2500; priceRange.value = 2500; priceRangeValue.textContent = '₹2500'; } });
 
         activeFiltersEl.innerHTML = chips.map((c, i) =>
             `<span class="filter-chip">${c.label} <button class="chip-remove" data-chip="${i}"><i class="ri-close-line"></i></button></span>`
@@ -331,15 +334,15 @@ document.addEventListener('DOMContentLoaded', () => {
         searchQuery    = '';
         activeCategory = 'all';
         organicOnly    = false;
-        maxPrice       = 200;
+        maxPrice       = 2500;
         sortOrder      = 'default';
 
         searchInput.value = '';
         clearSearchBtn.classList.remove('visible');
         document.querySelector('input[name="category"][value="all"]').checked = true;
         organicCheckbox.checked = false;
-        priceRange.value        = 200;
-        priceRangeValue.textContent = '₹200';
+        priceRange.value        = 2500;
+        priceRangeValue.textContent = '₹2500';
         sortSelect.value        = 'default';
 
         renderProducts();

@@ -94,6 +94,10 @@ async function fetchOrders() {
         const pendingList = allOrders.filter(o => o.status.toLowerCase() === 'pending');
         setText('stat-pending', pendingList.length);
         setText('orders-badge', pendingList.length);
+        
+        const acceptedList = allOrders.filter(o => o.status.toLowerCase() === 'accepted');
+        setText('stat-accepted', acceptedList.length);
+
         if (pendingList.length > 0) {
             const dot = document.getElementById('notif-dot');
             if (dot) dot.classList.add('show');
@@ -199,10 +203,46 @@ function initProductForm() {
     const hideForm = () => {
         wrap.style.display = 'none';
         form.reset();
+        document.getElementById('image-preview-container').style.display = 'none';
+        document.getElementById('image-preview').src = '';
         editingProductId = null;
         setText('apf-title', 'Add New Product');
         setText('apf-btn-label', 'Save Product');
     };
+
+    // Image Preview Logic
+    const fileInput = document.getElementById('productImageFile');
+    const previewContainer = document.getElementById('image-preview-container');
+    const previewImg = document.getElementById('image-preview');
+    const removeBtn = document.getElementById('remove-image-btn');
+    const urlInput = document.getElementById('productImage');
+
+    fileInput.addEventListener('change', () => {
+        const file = fileInput.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImg.src = e.target.result;
+                previewContainer.style.display = 'block';
+                urlInput.value = ''; // Clear URL input if file is selected
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    removeBtn.addEventListener('click', () => {
+        fileInput.value = '';
+        previewImg.src = '';
+        previewContainer.style.display = 'none';
+    });
+
+    urlInput.addEventListener('input', () => {
+        if (urlInput.value.trim()) {
+            fileInput.value = '';
+            previewImg.src = '';
+            previewContainer.style.display = 'none';
+        }
+    });
 
     if (openBtn) openBtn.addEventListener('click', showForm);
     if (closeBtn) closeBtn.addEventListener('click', hideForm);
@@ -217,22 +257,48 @@ function initProductForm() {
             const category = document.getElementById('productCategory').value;
             const price = parseFloat(document.getElementById('productPrice').value);
             const qty = parseFloat(document.getElementById('productQty').value);
-            const imgUrl = document.getElementById('productImage').value.trim();
             const organic = document.getElementById('productOrganic').checked;
-
-            const image = imgUrl || PLACEHOLDERS[category] || PLACEHOLDERS.default;
-
-            const productData = {
-                id: editingProductId,
-                name, category, price, qty, image, isOrganic: organic
-            };
+            
+            let image = document.getElementById('productImage').value.trim();
+            const file = document.getElementById('productImageFile').files[0];
 
             try {
+                const submitBtn = document.getElementById('apf-submit');
+                const originalBtnText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Saving...';
+
+                // If a file is selected, upload it first
+                if (file) {
+                    const formData = new FormData();
+                    formData.append('image', file);
+                    const uploadRes = await fetch('/api/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    if (uploadRes.ok) {
+                        const uploadData = await uploadRes.json();
+                        image = uploadData.url;
+                    } else {
+                        throw new Error('Image upload failed');
+                    }
+                }
+
+                if (!image) {
+                    image = PLACEHOLDERS[category] || PLACEHOLDERS.default;
+                }
+
+                const productData = {
+                    id: editingProductId,
+                    name, category, price, qty, image, isOrganic: organic
+                };
+
                 const res = await fetch('/api/products', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(productData)
                 });
+                
                 if (res.ok) {
                     showToast(editingProductId ? 'Product updated successfully!' : 'Product added successfully!');
                     await fetchProducts();
@@ -240,6 +306,11 @@ function initProductForm() {
                 }
             } catch (err) {
                 console.error('Error saving product:', err);
+                showToast(err.message || 'Error saving product');
+            } finally {
+                const submitBtn = document.getElementById('apf-submit');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = editingProductId ? '<i class="ri-check-line"></i> Update Product' : '<i class="ri-check-line"></i> Save Product';
             }
         });
     }
@@ -303,8 +374,19 @@ window.editProduct = (id) => {
     document.getElementById('productCategory').value = product.category;
     document.getElementById('productPrice').value = product.price;
     document.getElementById('productQty').value = product.qty || 0;
-    document.getElementById('productImage').value = product.image || '';
+    document.getElementById('productImage').value = product.image && !product.image.startsWith('/public/uploads/') ? product.image : '';
     document.getElementById('productOrganic').checked = product.isOrganic || false;
+
+    // Handle preview for uploaded images
+    if (product.image && product.image.startsWith('/public/uploads/')) {
+        const previewContainer = document.getElementById('image-preview-container');
+        const previewImg = document.getElementById('image-preview');
+        previewImg.src = product.image;
+        previewContainer.style.display = 'block';
+    } else {
+        document.getElementById('image-preview-container').style.display = 'none';
+        document.getElementById('image-preview').src = '';
+    }
 
     setText('apf-title', 'Edit Product');
     setText('apf-btn-label', 'Update Product');

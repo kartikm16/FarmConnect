@@ -37,14 +37,23 @@ if (registerForm) {
 
         const fullName = document.getElementById('fullName').value.trim();
         const farmName = document.getElementById('farmName').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
         const location = document.getElementById('location').value.trim();
-        const description = document.getElementById('produceType').value + " farming";
+        const experience = document.getElementById('experience').value.trim();
+        const produceType = document.getElementById('produceType').value;
+        const farmingMethod = document.getElementById('farmingMethod').value;
+        const description = produceType + " farming using " + farmingMethod + " methods.";
 
         try {
             const res = await fetch('/api/farmer/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ fullName, farmName, location, description })
+                body: JSON.stringify({ 
+                    fullName, farmName, phone, email, password, 
+                    location, experience, produceType, farmingMethod, description 
+                })
             });
             const data = await res.json();
             
@@ -53,7 +62,7 @@ if (registerForm) {
                 const toast = document.getElementById('toast');
                 if (toast) toast.classList.add('show');
                 setTimeout(() => {
-                    window.location.href = 'farmer-dashboard.html';
+                    window.location.href = 'dashboard.html';
                 }, 2000);
             } else {
                 showFieldError('fg-email', data.error || 'Must be logged in via Google to turn into a Farmer!');
@@ -72,6 +81,10 @@ if (registerForm) {
         const phone = document.getElementById('phone').value.trim();
         const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
+        const location = document.getElementById('location').value.trim();
+        const experience = document.getElementById('experience').value.trim();
+        const produceType = document.getElementById('produceType').value;
+        const farmingMethod = document.getElementById('farmingMethod').value;
 
         if (!fullName) { showFieldError('fg-name', 'Please enter your full name.'); valid = false; }
         if (!farmName) { showFieldError('fg-farm', 'Please enter your farm name.'); valid = false; }

@@ -231,8 +231,25 @@
                             <span class="error-msg">Enter a valid quantity.</span>
                         </div>
                         <div class="form-group apf-full" id="fg-pimg">
-                            <label for="productImage">Image URL <span style="font-weight:400;color:var(--text-light)">(optional — leave blank for placeholder)</span></label>
-                            <div class="input-wrap"><i class="ri-image-line"></i><input type="url" id="productImage" placeholder="https://..."></div>
+                            <label for="productImageFile">Product Image</label>
+                            <div class="image-upload-wrapper">
+                                <div class="file-input-container">
+                                    <input type="file" id="productImageFile" accept="image/*" class="file-input">
+                                    <label for="productImageFile" class="file-label">
+                                        <i class="ri-upload-2-line"></i>
+                                        <span>Click to upload or drag & drop</span>
+                                    </label>
+                                </div>
+                                <div class="or-divider"><span>OR</span></div>
+                                <div class="input-wrap">
+                                    <i class="ri-link"></i>
+                                    <input type="url" id="productImage" placeholder="Paste image URL instead...">
+                                </div>
+                            </div>
+                            <div id="image-preview-container" class="image-preview-container" style="display: none;">
+                                <img id="image-preview" src="" alt="Preview">
+                                <button type="button" id="remove-image-btn" class="remove-image-btn"><i class="ri-close-line"></i></button>
+                            </div>
                         </div>
                         <div class="form-group apf-full">
                             <label>
